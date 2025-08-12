@@ -1,0 +1,161 @@
+<% include layout %>
+<div class="page-header">
+    <div class="header-content">
+        <div>
+            <h1>
+                <i class="fas fa-check-circle"></i>
+                Attendance - <%= course.course_name %>
+            </h1>
+            <p>Course: <%= course.course_code %> | Date: <%= date %></p>
+        </div>
+        <div class="header-actions">
+            <a href="/courses" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i>
+                Back to Courses
+            </a>
+        </div>
+    </div>
+</div>
+
+<% if (success) { %>
+    <div class="alert alert-success">
+        <i class="fas fa-check-circle"></i>
+        <%= success %>
+    </div>
+<% } %>
+
+<% if (error) { %>
+    <div class="alert alert-error">
+        <i class="fas fa-exclamation-circle"></i>
+        <%= error %>
+    </div>
+<% } %>
+
+<div class="attendance-container">
+    <form action="/attendance/<%= course.id %>" method="POST" id="attendanceForm">
+        <div class="attendance-header">
+            <div class="date-selector">
+                <label for="date">
+                    <i class="fas fa-calendar-alt"></i>
+                    Date:
+                </label>
+                <input 
+                    type="date" 
+                    id="date" 
+                    name="date" 
+                    value="<%= date %>" 
+                    onchange="changeDate()"
+                    max="<%= new Date().toISOString().split('T')[0] %>"
+                >
+            </div>
+            
+            <div class="bulk-actions">
+                <button type="button" onclick="markAllPresent()" class="btn btn-outline btn-sm">
+                    <i class="fas fa-check"></i> Mark All Present
+                </button>
+                <button type="button" onclick="markAllAbsent()" class="btn btn-outline btn-sm">
+                    <i class="fas fa-times"></i> Mark All Absent
+                </button>
+            </div>
+        </div>
+
+        <div class="students-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Present</th>
+                        <th>Absent</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% students.forEach(student => { %>
+                        <tr>
+                            <td><%= student.student_id %></td>
+                            <td><%= student.first_name %> <%= student.last_name %></td>
+                            <td><%= student.email %></td>
+                            <td class="status-cell">
+                                <input 
+                                    type="radio" 
+                                    name="attendance[<%= student.id %>]" 
+                                    value="present"
+                                    id="present_<%= student.id %>"
+                                    <%= student.status === 'present' ? 'checked' : '' %>
+                                >
+                                <label for="present_<%= student.id %>" class="status-label status-present">
+                                    <i class="fas fa-check"></i>
+                                </label>
+                            </td>
+                            <td class="status-cell">
+                                <input 
+                                    type="radio" 
+                                    name="attendance[<%= student.id %>]" 
+                                    value="absent"
+                                    id="absent_<%= student.id %>"
+                                    <%= student.status === 'absent' ? 'checked' : '' %>
+                                >
+                                <label for="absent_<%= student.id %>" class="status-label status-absent">
+                                    <i class="fas fa-times"></i>
+                                </label>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i>
+                Save Attendance
+            </button>
+            
+            <button type="button" onclick="generateReport()" class="btn btn-secondary">
+                <i class="fas fa-file-alt"></i>
+                Generate Report
+            </button>
+        </div>
+    </form>
+</div>
+
+<% if (students.length === 0) { %>
+    <div class="empty-state">
+        <i class="fas fa-users"></i>
+        <h3>No students enrolled</h3>
+        <p>No students are enrolled in this course yet.</p>
+    </div>
+<% } %>
+
+<script>
+function changeDate() {
+    const newDate = document.getElementById('date').value;
+    window.location.href = `/attendance/<%= course.id %>?date=${newDate}`;
+}
+
+function markAllPresent() {
+    const presentRadios = document.querySelectorAll('input[value="present"]');
+    presentRadios.forEach(radio => radio.checked = true);
+}
+
+function markAllAbsent() {
+    const absentRadios = document.querySelectorAll('input[value="absent"]');
+    absentRadios.forEach(radio => radio.checked = true);
+}
+
+function generateReport() {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/generate-report/<%= course.id %>';
+    
+    const dateInput = document.createElement('input');
+    dateInput.type = 'hidden';
+    dateInput.name = 'date';
+    dateInput.value = document.getElementById('date').value;
+    
+    form.appendChild(dateInput);
+    document.body.appendChild(form);
+    form.submit();
+}
+</script>

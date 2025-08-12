@@ -1,0 +1,37 @@
+<% include layout %>
+<div class="page-header">
+    <h1>
+        <i class="fas fa-book"></i>
+        Select Course
+    </h1>
+    <p>Choose a course to manage attendance</p>
+</div>
+
+<div class="courses-grid">
+    <% courses.forEach(course => { %>
+        <div class="course-card">
+            <div class="course-header">
+                <h3><%= course.course_code %></h3>
+                <div class="course-badge">Active</div>
+            </div>
+            <div class="course-body">
+                <h4><%= course.course_name %></h4>
+                <p>Manage attendance for this course</p>
+            </div>
+            <div class="course-footer">
+                <a href="/attendance/<%= course.id %>" class="btn btn-primary">
+                    <i class="fas fa-check-circle"></i>
+                    Take Attendance
+                </a>
+            </div>
+        </div>
+    <% }); %>
+</div>
+
+<% if (courses.length === 0) { %>
+    <div class="empty-state">
+        <i class="fas fa-book-open"></i>
+        <h3>No courses available</h3>
+        <p>Please contact the administrator to set up courses.</p>
+    </div>
+<% } %>
