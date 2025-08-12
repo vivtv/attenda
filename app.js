@@ -35,9 +35,9 @@ app.set('views', path.join(__dirname, 'views'));
 app.use('/auth', authRoutes);
 app.use('/', authMiddleware.requireAuth, attendanceRoutes);
 
-// Root route - redirect to courses
+// Root route - redirect to dashboard
 app.get('/', authMiddleware.requireAuth, (req, res) => {
-    res.redirect('/courses');
+    res.redirect('/dashboard');
 });
 
 // Create reports directory if it doesn't exist

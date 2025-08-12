@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - University Attendance System</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-graduation-cap"></i>
+                <span>University Attendance</span>
+            </div>
+            <div class="nav-links">
+                <a href="/dashboard" class="nav-link">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+                <a href="/courses" class="nav-link">
+                    <i class="fas fa-book"></i> Courses
+                </a>
+                <a href="/reports" class="nav-link">
+                    <i class="fas fa-chart-bar"></i> Reports
+                </a>
+                <div class="nav-user">
+                    <i class="fas fa-user"></i>
+                    <span><%= instructorName %></span>
+                </div>
+                <form action="/auth/logout" method="POST" class="logout-form">
+                    <button type="submit" class="btn btn-outline">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="page-header">
+                <div class="header-content">
+                    <div>
+                        <h1>
+                            <i class="fas fa-tachometer-alt"></i>
+                            Dashboard
+                        </h1>
+                        <p>Welcome back, <%= instructorName %>! Manage your courses and attendance.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3><%= courses ? courses.length : 3 %></h3>
+                        <p>Active Courses</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>30</h3>
+                        <p>Total Students</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>Today</h3>
+                        <p>Take Attendance</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>85%</h3>
+                        <p>Avg Attendance</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-actions">
+                <h2>Quick Actions</h2>
+                <div class="action-cards">
+                    <a href="/courses" class="action-card">
+                        <div class="action-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="action-content">
+                            <h3>Take Attendance</h3>
+                            <p>Mark student attendance for today</p>
+                        </div>
+                        <div class="action-arrow">
+                            <i class="fas fa-arrow-right"></i>
+                        </div>
+                    </a>
+
+                    <a href="/reports" class="action-card">
+                        <div class="action-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="action-content">
+                            <h3>View Reports</h3>
+                            <p>Generate and download attendance reports</p>
+                        </div>
+                        <div class="action-arrow">
+                            <i class="fas fa-arrow-right"></i>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <% if (typeof courses !== 'undefined' && courses.length > 0) { %>
+            <div class="recent-courses">
+                <h2>Your Courses</h2>
+                <div class="courses-grid">
+                    <% courses.forEach(course => { %>
+                        <div class="course-card">
+                            <div class="course-header">
+                                <h3><%= course.course_code %></h3>
+                                <div class="course-badge">Active</div>
+                            </div>
+                            <div class="course-body">
+                                <h4><%= course.course_name %></h4>
+                                <p>Ready for attendance tracking</p>
+                            </div>
+                            <div class="course-footer">
+                                <a href="/attendance/<%= course.id %>" class="btn btn-primary">
+                                    <i class="fas fa-check-circle"></i>
+                                    Take Attendance
+                                </a>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+            <% } %>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 University Attendance Tracking System. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Auto-hide alerts after 5 seconds
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 300);
+            });
+        }, 5000);
+    </script>
+</body>
+</html>

@@ -6,7 +6,7 @@ const router = express.Router();
 // Login page
 router.get('/login', (req, res) => {
     if (req.session.instructorId) {
-        return res.redirect('/courses');
+        return res.redirect('/dashboard');
     }
     res.render('login', { 
         title: 'Instructor Login',
@@ -38,22 +38,34 @@ router.post('/login', async (req, res) => {
 
         const instructor = rows[0];
 
-        // Verify password
+        // Verify password using bcrypt
         const isValidPassword = await bcrypt.compare(password, instructor.password);
         if (!isValidPassword) {
             req.session.error = 'Invalid email or password';
             return res.redirect('/auth/login');
         }
 
-        // Set session
+        // Set session data
         req.session.instructorId = instructor.id;
         req.session.instructorName = instructor.name;
         req.session.instructorEmail = instructor.email;
 
-        res.redirect('/courses');
+        // Redirect to dashboard
+        res.redirect('/dashboard');
     } catch (error) {
         console.error('Login error:', error);
-        req.session.error = 'An error occurred during login. Please try again.';
+        
+        // Handle specific database connection errors
+        if (error.code === 'ECONNREFUSED') {
+            req.session.error = 'Database connection failed. Please ensure MySQL is running and properly configured.';
+        } else if (error.code === 'ER_ACCESS_DENIED_ERROR') {
+            req.session.error = 'Database access denied. Please check your database credentials.';
+        } else if (error.code === 'ER_BAD_DB_ERROR') {
+            req.session.error = 'Database not found. Please run the setup.sql script to create the database.';
+        } else {
+            req.session.error = 'Login failed. Please try again later.';
+        }
+        
         res.redirect('/auth/login');
     }
 });

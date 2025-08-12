@@ -4,6 +4,34 @@ const path = require('path');
 const db = require('../config/database');
 const router = express.Router();
 
+// Dashboard route
+router.get('/dashboard', async (req, res) => {
+    try {
+        // Try to get courses for the dashboard
+        let courses = [];
+        try {
+            const [courseRows] = await db.execute(
+                'SELECT id, course_code, course_name FROM courses ORDER BY course_code'
+            );
+            courses = courseRows;
+        } catch (dbError) {
+            console.log('Database not connected, showing dashboard without course data');
+        }
+
+        res.render('dashboard', {
+            title: 'Dashboard',
+            courses,
+            instructorName: req.session.instructorName
+        });
+    } catch (error) {
+        console.error('Error loading dashboard:', error);
+        res.status(500).render('error', {
+            message: 'Error loading dashboard',
+            error: {}
+        });
+    }
+});
+
 // Courses selection page
 router.get('/courses', async (req, res) => {
     try {
