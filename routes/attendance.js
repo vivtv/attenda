@@ -120,50 +120,76 @@ router.post('/attendance/:courseId', async (req, res) => {
         const { date, attendance } = req.body;
         const instructorId = req.session.instructorId;
 
+        console.log('Attendance submission:', { 
+            courseId, 
+            date, 
+            attendance: attendance ? Object.keys(attendance).length + ' students' : 'none', 
+            instructorId,
+            formData: req.body 
+        });
+
         if (!attendance || Object.keys(attendance).length === 0) {
+            console.log('No attendance data received');
             req.session.error = 'Please mark attendance for at least one student';
             return res.redirect(`/attendance/${courseId}?date=${date}`);
         }
 
-        // Begin transaction
-        await db.execute('START TRANSACTION');
+        if (!date) {
+            req.session.error = 'Date is required';
+            return res.redirect(`/attendance/${courseId}`);
+        }
 
+        // Get a connection for transaction
+        const connection = await db.getConnection();
+        
         try {
+            // Begin transaction
+            await connection.execute('START TRANSACTION');
+
             // Delete existing attendance for this date and course
-            await db.execute(
+            await connection.execute(
                 'DELETE FROM attendance WHERE course_id = ? AND attendance_date = ?',
                 [courseId, date]
             );
 
             // Insert new attendance records
-            const attendanceData = [];
+            let recordCount = 0;
             for (const [studentId, status] of Object.entries(attendance)) {
                 if (status === 'present' || status === 'absent') {
-                    attendanceData.push([courseId, parseInt(studentId), date, status, instructorId]);
+                    console.log(`Inserting attendance: courseId=${courseId}, studentId=${studentId}, date=${date}, status=${status}, instructorId=${instructorId}`);
+                    await connection.execute(
+                        'INSERT INTO attendance (course_id, student_id, attendance_date, status, recorded_by) VALUES (?, ?, ?, ?, ?)',
+                        [courseId, parseInt(studentId), date, status, instructorId]
+                    );
+                    recordCount++;
                 }
             }
 
-            if (attendanceData.length > 0) {
-                await db.execute(
-                    'INSERT INTO attendance (course_id, student_id, attendance_date, status, recorded_by) VALUES ?',
-                    [attendanceData]
-                );
-            }
-
             // Commit transaction
-            await db.execute('COMMIT');
+            await connection.execute('COMMIT');
+            connection.release();
 
-            req.session.success = `Attendance recorded successfully for ${attendanceData.length} students`;
+            req.session.success = `Attendance recorded successfully for ${recordCount} students`;
             res.redirect(`/attendance/${courseId}?date=${date}`);
         } catch (error) {
             // Rollback transaction on error
-            await db.execute('ROLLBACK');
+            try {
+                await connection.execute('ROLLBACK');
+            } catch (rollbackError) {
+                console.error('Rollback error:', rollbackError);
+            }
+            connection.release();
             throw error;
         }
     } catch (error) {
         console.error('Error submitting attendance:', error);
-        req.session.error = 'Error recording attendance. Please try again.';
-        res.redirect(`/attendance/${req.params.courseId}?date=${req.body.date}`);
+        console.error('Error details:', {
+            message: error.message,
+            code: error.code,
+            sql: error.sql
+        });
+        req.session.error = `Error recording attendance: ${error.message}`;
+        res.redirect(`/attendance/${req.params.courseId}?date=${req.body.date || new Date().toISOString().split('T')[0]}`);
     }
 });
 

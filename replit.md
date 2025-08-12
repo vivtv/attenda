@@ -4,6 +4,21 @@
 
 This is a web-based university attendance management system built for instructors to track student attendance across different courses. The application provides a session-based authentication system where instructors can log in, select courses, and manage student attendance records. The system features a clean, responsive interface and generates attendance reports for administrative purposes.
 
+## Recent Changes (August 12, 2025)
+
+### Attendance Update Bug Fixes
+- Fixed critical SQL insertion bug in attendance form submissions
+- Replaced incorrect multi-row VALUES syntax with individual INSERT statements
+- Enhanced transaction handling with dedicated database connections and proper rollback
+- Added comprehensive form validation (client-side and server-side)
+- Improved error logging with detailed SQL error reporting
+- Added attendance submission debugging logs for troubleshooting
+
+### Database Connection Status
+- All environment variables (DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, SESSION_SECRET) are properly configured
+- Application successfully connects to port 5000 and renders all templates correctly  
+- MySQL database connection pending user's local MySQL server setup
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.

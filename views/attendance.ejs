@@ -147,7 +147,7 @@
         </div>
 
         <div class="form-actions">
-            <button type="submit" class="btn btn-primary">
+            <button type="submit" class="btn btn-primary" onclick="return validateAttendance()">
                 <i class="fas fa-save"></i>
                 Save Attendance
             </button>
@@ -182,6 +182,15 @@ function markAllPresent() {
 function markAllAbsent() {
     const absentRadios = document.querySelectorAll('input[value="absent"]');
     absentRadios.forEach(radio => radio.checked = true);
+}
+
+function validateAttendance() {
+    const checkedRadios = document.querySelectorAll('input[type="radio"]:checked');
+    if (checkedRadios.length === 0) {
+        alert('Please mark attendance for at least one student before saving.');
+        return false;
+    }
+    return true;
 }
 
 function generateReport() {
