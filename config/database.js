@@ -9,8 +9,18 @@ const pool = mysql.createPool({
     database: process.env.DB_NAME || 'university_attendance',
     waitForConnections: true,
     connectionLimit: 10,
-    queueLimit: 0
+    queueLimit: 0,
+    acquireTimeout: 60000,
+    timeout: 60000,
+    reconnect: true
 });
+
+// Log connection configuration (without password)
+console.log('Database configuration:');
+console.log(`- Host: ${process.env.DB_HOST || 'localhost'}`);
+console.log(`- User: ${process.env.DB_USER || 'root'}`);
+console.log(`- Database: ${process.env.DB_NAME || 'university_attendance'}`);
+console.log(`- Password: ${process.env.DB_PASSWORD ? '[SET]' : '[NOT SET]'}`);
 
 // Create promise-based wrapper
 const db = pool.promise();

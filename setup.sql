@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS attendance (
 
 -- Insert instructor (password is 'password123' hashed with bcrypt)
 INSERT INTO instructors (email, password, name) VALUES 
-('bobby@prof.edu', '$2b$10$8K1p/a0dKADy0BacZuXTAeBdkFjYdHqJFvQFj0wHJmvh3qA2F9Z8q', 'Professor Bobby Smith');
+('bobby@prof.edu', '$2b$10$phzPqfbslshzu9HhSncBSegc0ufOfIxWnR7m1xwphvvqGqPXqXmIW', 'Professor Bobby Smith');
 
 -- Insert sample courses
 INSERT INTO courses (course_code, course_name, instructor_id) VALUES 
