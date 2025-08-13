@@ -1,0 +1,27 @@
+
+UNIVERSITY ATTENDANCE REPORT
+============================
+
+Course: CS101 - Introduction to Computer Science
+Date: 2025-08-13
+Generated: 13/8/2568 08:14:57
+
+ATTENDANCE SUMMARY
+==================
+
+STUDENT ATTENDANCE:
+--------------------------------------------------
+STU009     | Anderson, Ian             | PRESENT
+STU003     | Brown, Charlie            | PRESENT
+STU004     | Davis, Diana              | PRESENT
+STU001     | Johnson, Alice            | PRESENT
+STU005     | Miller, Edward            | PRESENT
+STU007     | Moore, George             | PRESENT
+STU008     | Taylor, Hannah            | PRESENT
+STU002     | Williams, Bob             | PRESENT
+STU006     | Wilson, Fiona             | PRESENT
+--------------------------------------------------
+TOTAL STUDENTS: 9
+PRESENT: 0
+ABSENT: 9
+ATTENDANCE RATE: 0.0%
