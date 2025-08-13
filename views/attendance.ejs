@@ -120,9 +120,9 @@
                                 <input 
                                     type="radio" 
                                     name="attendance[<%= student.id %>]" 
-                                    value="present"
+                                    value="Present"
                                     id="present_<%= student.id %>"
-                                    <%= student.status === 'present' ? 'checked' : '' %>
+                                    <%= student.status === 'Present' ? 'checked' : '' %>
                                 >
                                 <label for="present_<%= student.id %>" class="status-label status-present">
                                     <i class="fas fa-check"></i>
@@ -132,9 +132,9 @@
                                 <input 
                                     type="radio" 
                                     name="attendance[<%= student.id %>]" 
-                                    value="absent"
+                                    value="Absent"
                                     id="absent_<%= student.id %>"
-                                    <%= student.status === 'absent' ? 'checked' : '' %>
+                                    <%= student.status === 'Absent' ? 'checked' : '' %>
                                 >
                                 <label for="absent_<%= student.id %>" class="status-label status-absent">
                                     <i class="fas fa-times"></i>
@@ -175,12 +175,12 @@ function changeDate() {
 }
 
 function markAllPresent() {
-    const presentRadios = document.querySelectorAll('input[value="present"]');
+    const presentRadios = document.querySelectorAll('input[value="Present"]');
     presentRadios.forEach(radio => radio.checked = true);
 }
 
 function markAllAbsent() {
-    const absentRadios = document.querySelectorAll('input[value="absent"]');
+    const absentRadios = document.querySelectorAll('input[value="Absent"]');
     absentRadios.forEach(radio => radio.checked = true);
 }
 

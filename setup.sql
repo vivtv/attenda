@@ -44,18 +44,18 @@ CREATE TABLE IF NOT EXISTS course_enrollments (
 
 -- Create attendance table
 CREATE TABLE IF NOT EXISTS attendance (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    course_id INT NOT NULL,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     student_id INT NOT NULL,
-    attendance_date DATE NOT NULL,
-    status ENUM('present', 'absent') NOT NULL,
+    course_id INT NOT NULL,
+    date DATE NOT NULL,
+    status ENUM('Present','Absent') NOT NULL,
     recorded_by INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
     FOREIGN KEY (recorded_by) REFERENCES instructors(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_attendance (course_id, student_id, attendance_date)
+    UNIQUE KEY unique_attendance (student_id, course_id, date)
 );
 
 -- Insert instructor (password is 'password123' hashed with bcrypt)

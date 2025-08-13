@@ -87,7 +87,7 @@ router.get('/attendance/:courseId', async (req, res) => {
             JOIN course_enrollments ce ON s.id = ce.student_id
             LEFT JOIN attendance a ON s.id = a.student_id 
                 AND a.course_id = ? 
-                AND a.attendance_date = ?
+                AND a.date = ?
             WHERE ce.course_id = ?
             ORDER BY s.last_name, s.first_name
         `, [courseId, date, courseId]);
@@ -124,8 +124,7 @@ router.post('/attendance/:courseId', async (req, res) => {
             courseId, 
             date, 
             attendance: attendance ? Object.keys(attendance).length + ' students' : 'none', 
-            instructorId,
-            formData: req.body 
+            instructorId 
         });
 
         if (!attendance || Object.keys(attendance).length === 0) {
@@ -139,48 +138,35 @@ router.post('/attendance/:courseId', async (req, res) => {
             return res.redirect(`/attendance/${courseId}`);
         }
 
-        // Get a connection for transaction
-        const connection = await db.getConnection();
-        
-        try {
-            // Begin transaction
-            await connection.execute('START TRANSACTION');
+        // Process each student's attendance using INSERT ... ON DUPLICATE KEY UPDATE
+        let recordCount = 0;
+        const sql = `
+            INSERT INTO attendance (student_id, course_id, date, status, recorded_by)
+            VALUES (?, ?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE 
+                status = VALUES(status),
+                recorded_by = VALUES(recorded_by),
+                updated_at = CURRENT_TIMESTAMP
+        `;
 
-            // Delete existing attendance for this date and course
-            await connection.execute(
-                'DELETE FROM attendance WHERE course_id = ? AND attendance_date = ?',
-                [courseId, date]
-            );
-
-            // Insert new attendance records
-            let recordCount = 0;
-            for (const [studentId, status] of Object.entries(attendance)) {
-                if (status === 'present' || status === 'absent') {
-                    console.log(`Inserting attendance: courseId=${courseId}, studentId=${studentId}, date=${date}, status=${status}, instructorId=${instructorId}`);
-                    await connection.execute(
-                        'INSERT INTO attendance (course_id, student_id, attendance_date, status, recorded_by) VALUES (?, ?, ?, ?, ?)',
-                        [courseId, parseInt(studentId), date, status, instructorId]
-                    );
-                    recordCount++;
-                }
+        for (const [studentId, status] of Object.entries(attendance)) {
+            if (status === 'Present' || status === 'Absent') {
+                console.log(`Processing attendance: studentId=${studentId}, courseId=${courseId}, date=${date}, status=${status}`);
+                
+                await db.execute(sql, [
+                    parseInt(studentId), 
+                    courseId, 
+                    date, 
+                    status, 
+                    instructorId
+                ]);
+                recordCount++;
             }
-
-            // Commit transaction
-            await connection.execute('COMMIT');
-            connection.release();
-
-            req.session.success = `Attendance recorded successfully for ${recordCount} students`;
-            res.redirect(`/attendance/${courseId}?date=${date}`);
-        } catch (error) {
-            // Rollback transaction on error
-            try {
-                await connection.execute('ROLLBACK');
-            } catch (rollbackError) {
-                console.error('Rollback error:', rollbackError);
-            }
-            connection.release();
-            throw error;
         }
+
+        req.session.success = `Attendance recorded successfully for ${recordCount} students`;
+        res.redirect(`/attendance/${courseId}?date=${date}`);
+
     } catch (error) {
         console.error('Error submitting attendance:', error);
         console.error('Error details:', {
@@ -214,7 +200,7 @@ router.post('/generate-report/:courseId', async (req, res) => {
                 a.created_at
             FROM attendance a
             JOIN students s ON a.student_id = s.id
-            WHERE a.course_id = ? AND a.attendance_date = ?
+            WHERE a.course_id = ? AND a.date = ?
             ORDER BY s.last_name, s.first_name
         `, [courseId, date]);
 
@@ -350,7 +336,7 @@ ATTENDANCE SUMMARY
         const status = record.status.toUpperCase();
         content += `${record.student_id.padEnd(10)} | ${(record.last_name + ', ' + record.first_name).padEnd(25)} | ${status}\n`;
         
-        if (record.status === 'present') {
+        if (record.status === 'Present') {
             presentCount++;
         } else {
             absentCount++;
