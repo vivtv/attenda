@@ -92,6 +92,8 @@ router.get('/attendance/:courseId', async (req, res) => {
             ORDER BY s.last_name, s.first_name
         `, [courseId, date, courseId]);
 
+        console.log(`Loaded ${students.length} students for course ${courseId}:`, students.map(s => ({ id: s.id, student_id: s.student_id, name: `${s.first_name} ${s.last_name}` })));
+
         res.render('attendance', {
             title: `Attendance - ${course.course_name}`,
             course,
@@ -124,7 +126,8 @@ router.post('/attendance/:courseId', async (req, res) => {
             courseId, 
             date, 
             attendance: attendance ? Object.keys(attendance).length + ' students' : 'none', 
-            instructorId 
+            instructorId,
+            attendanceData: attendance
         });
 
         if (!attendance || Object.keys(attendance).length === 0) {
@@ -136,6 +139,23 @@ router.post('/attendance/:courseId', async (req, res) => {
         if (!date) {
             req.session.error = 'Date is required';
             return res.redirect(`/attendance/${courseId}`);
+        }
+
+        if (!instructorId) {
+            req.session.error = 'Instructor not logged in';
+            return res.redirect('/auth/login');
+        }
+
+        // Verify instructor exists
+        const [instructorCheck] = await db.execute(
+            'SELECT id FROM instructors WHERE id = ?',
+            [instructorId]
+        );
+        
+        if (instructorCheck.length === 0) {
+            console.error(`Instructor ID ${instructorId} not found in instructors table`);
+            req.session.error = 'Invalid instructor session';
+            return res.redirect('/auth/login');
         }
 
         // Process each student's attendance using INSERT ... ON DUPLICATE KEY UPDATE
@@ -151,7 +171,18 @@ router.post('/attendance/:courseId', async (req, res) => {
 
         for (const [studentId, status] of Object.entries(attendance)) {
             if (status === 'Present' || status === 'Absent') {
-                console.log(`Processing attendance: studentId=${studentId}, courseId=${courseId}, date=${date}, status=${status}`);
+                console.log(`Processing attendance: studentId=${studentId}, courseId=${courseId}, date=${date}, status=${status}, instructorId=${instructorId}`);
+                
+                // Verify the student exists before inserting
+                const [studentCheck] = await db.execute(
+                    'SELECT id FROM students WHERE id = ?',
+                    [parseInt(studentId)]
+                );
+                
+                if (studentCheck.length === 0) {
+                    console.error(`Student ID ${studentId} not found in students table`);
+                    continue;
+                }
                 
                 await db.execute(sql, [
                     parseInt(studentId), 
